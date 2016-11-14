@@ -45,27 +45,27 @@ Apart from the setup/entry file, the project will be decomposed as folows:
  
  ### Implementation Timeline:
  
- **Day 1** Set up necessary node modules. Review AudoContext. Organize administrative files (`webpack.config.js`, `packages.json`). Write control class. Implement methods outlined above. Goals for the day: 
- - [ ] Tone start/stop on object creation/destruction: 
- - [ ] Smooth tone pitch and volume change based on changes in "position" of control node. 
+**Day 1** Set up necessary node modules. Review AudoContext. Organize administrative files (`webpack.config.js`, `packages.json`). Write control class. Implement methods outlined above. Goals for the day: 
+   - [ ] Tone start/stop on object creation/destruction: 
+   - [ ] Smooth tone pitch and volume change based on changes in "position" of control node. 
  
- **Day 2** Write enough of theremax class to support drag-and-drop of control nodes along with appropriate shift in their
+**Day 2** Write enough of theremax class to support drag-and-drop of control nodes along with appropriate shift in their
  pitch and volume. Goals for the day: 
- - [ ] Render simple circle for control nodes on the theremax grid. 
- - [ ] Click-release to place/delete control nodes
- - [ ] Click-hold to play sound without placing permanent control node
- - [ ] Click-drag on control node to move it. 
+   - [ ] Render simple circle for control nodes on the theremax grid. 
+   - [ ] Click-release to place/delete control nodes
+   - [ ] Click-hold to play sound without placing permanent control node
+   - [ ] Click-drag on control node to move it. 
  
- **Day 3** Get theremax to render a waveform based on pitch/amplitude of aggregated control nodes. Largely implemented already as part of exploration over the weekend. Will need refactoring and aesthetic tweaking. Goals for the day: 
- - [ ] Render grid with bold "zero" line. 
- - [ ] Render animated waveform that roughly represents tone played. 
- - [ ] If possible, consult with someone musically minded to figure out logarithmic scaling so that vertical lines correspond to known notes. 
+**Day 3** Get theremax to render a waveform based on pitch/amplitude of aggregated control nodes. Largely implemented already as part of exploration over the weekend. Will need refactoring and aesthetic tweaking. Goals for the day: 
+   - [ ] Render grid with bold "zero" line.
+   - [ ] Render animated waveform that roughly represents tone played. 
+   - [ ] If possible, consult with someone musically minded to figure out logarithmic scaling so that vertical lines correspond to known notes. 
  
- **Day 4** Create help modal and self-advertising links. Polish styling - either render from image for control nodes or devise custom draw scheme. Render glare/screen effect on main window. Integrate links with appropriate CSS. Goals for the day. 
- - [ ] Uninitiated user should be able to understand how to use app within ten seconds of opening it. 
- - [ ] App should look like something more than a raw canvas drawing. Scratch version of the wave form needs minor tweaks more in terms of behavior than of color/glow styling, but the flat black screen and float monochrome control nodes will need a bit of work. 
+**Day 4** Create help modal and self-advertising links. Polish styling - either render from image for control nodes or devise custom draw scheme. Render glare/screen effect on main window. Integrate links with appropriate CSS. Goals for the day. 
+   - [ ] Uninitiated user should be able to understand how to use app within ten seconds of opening it. 
+   - [ ] App should look like something more than a raw canvas drawing. Scratch version of the wave form needs minor tweaks more in terms of behavior than of color/glow styling, but the flat black screen and float monochrome control nodes will need a bit of work. 
  
- ### Bonus Features:
+### Bonus Features:
   - [ ] Support multi-touch. Test on laptop if screen supports it, else, this bonus is dependent on...
   - [ ] Ensure proper functioning on mobile devices. 
   - [ ] Allow sounds other than pure sine waves. 
