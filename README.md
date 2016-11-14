@@ -1,4 +1,4 @@
- # ThereMax
+# ThereMax
 A simple theremin-esque in-browser instrument. 
 
 A theremin is an early electronic instrumment whose operator can control its sound by varying the distance between his or her 
@@ -40,7 +40,7 @@ Apart from the setup/entry file, the project will be decomposed as folows:
  - [ ] `control.js`, defining a single control point, ephemeral or otherwise. This will define `draw`, `play`, `gain`,
  `pitch`, and `stop` methods that will render the control node to the screen, start playing a sound, change the tone's 
  volume, change the tone's pitch, and stop playing a sound, respectively. 
- - [ ] 'theremax.js`, defining the view window, will aggregate and render control nodes, provide the interface for creating,
+ - [ ] `theremax.js`, defining the view window, will aggregate and render control nodes, provide the interface for creating,
  moving, and destroying them, and will render the viewport grid and the waveform. 
  
  ### Implementation Timeline:
