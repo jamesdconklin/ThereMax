@@ -157,8 +157,8 @@
 	document.addEventListener("DOMContentLoaded", function (event) {
 	  console.log("FOOOOOO");
 	  var canvas = document.getElementById("game-canvas");
-	  canvas.width = window.innerWidth;
-	  canvas.height = window.innerHeight;
+	  canvas.width = window.innerWidth - 30;
+	  canvas.height = window.innerHeight - 30;
 	  var context = canvas.getContext("2d");
 	  window.el = canvas;
 	  var tm = new Theremax(context, canvas);
@@ -220,6 +220,8 @@
 	    value: function handleMouseUp(e) {
 	      e.preventDefault();
 	      e.stopPropagation();
+	      this.click && this.click.stop();
+	      this.click = null;
 	      this.mouseDown = false;
 	      this.focusObject = null;
 	    }
@@ -240,7 +242,8 @@
 	      var posArray = [];
 	      for (var j = 0; j < e.targetTouches.length; j++) {
 	        var et = e.targetTouches[j];
-	        posArray.push([et.clientX, et.clientY]);
+	        posArray.push(this.getCursorPosition(e.target, et));
+	        // posArray.push([et.clientX, et.clientY]);
 	      }
 	      return posArray;
 	    }
@@ -320,6 +323,13 @@
 	      for (var i = 0; i < this.touches.length; i++) {
 	        _loop();
 	      }
+	      if (this.focusObject && posArray.reduce(function (a, b) {
+	        return a || _this.focusObject.isClicked(b);
+	      }, 0)) {
+	        // pass
+	      } else {
+	        this.focusObject = null;
+	      }
 	      this.touches = newTouches;
 	    }
 	  }, {
@@ -327,9 +337,7 @@
 	    value: function handleMouseMove(e) {
 	      e.preventDefault();
 	      e.stopPropagation();
-	      var x = e.layerX,
-	          y = e.layerY;
-	      var pos = [x, y];
+	      var pos = this.getCursorPosition(e.target, e);
 	
 	      if (this.focusObject) {
 	        this.focusObject.move(pos);
@@ -338,29 +346,27 @@
 	  }, {
 	    key: "handleMouseDown",
 	    value: function handleMouseDown(e) {
-	      var x = e.layerX,
-	          y = e.layerY;
+	      var pos = this.getCursorPosition(e.target, e);
 	      if (this.mouseDown) {
 	        return;
 	      }
 	
 	      this.mouseDown = true;
 	
-	      var pos = [x, y];
-	      var objects = this.allControls();
+	      var objects = this.controls;
 	      for (var i = 0; i < objects.length; i++) {
 	        if (objects[i].isClicked(pos)) {
 	          this.focusObject = objects[i];
 	          return;
 	        }
 	      }
-	
-	      this.focusObject = null;
+	      this.focusObject = new _control2.default({ pos: pos, grid: this });
+	      this.click = this.focusObject;
 	    }
 	  }, {
 	    key: "allControls",
 	    value: function allControls() {
-	      return this.controls.concat(this.touches).concat(this.click).filter(function (p) {
+	      return this.controls.concat(this.touches).concat(this.click).concat(this.focusObject).filter(function (p) {
 	        return p;
 	      });
 	    }
@@ -369,6 +375,7 @@
 	    value: function addControls() {
 	      for (var i = 1; i < NUM_CONTROLS + 1; i++) {
 	        var opts = {
+	          // pos: [ 30, i * (1/(NUM_CONTROLS+1)) * (DIM_Y-30) + 15 ],
 	          pos: [30, i * (1 / (NUM_CONTROLS + 1)) * (DIM_Y - 30) + 15],
 	          grid: this,
 	          radius: 30
