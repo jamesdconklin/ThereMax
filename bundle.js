@@ -86,6 +86,7 @@
 	
 	      this.bindMouseHandlers();
 	      this.bindTouchHandlers();
+	      this.bindPauseHandler();
 	      window.setInterval(function () {
 	        _this.grid.step();
 	        _this.grid.draw(_this.ctx);
@@ -109,6 +110,11 @@
 	      this.el.addEventListener("mouseup", function (e) {
 	        _this3.grid.handleMouseUp(e);
 	      });
+	      // this.el.addEventListener("mouseout",
+	      //   (e) => {
+	      //     this.grid.handleMouseUp(e);
+	      //   }
+	      // );
 	    }
 	  }, {
 	    key: "bindTouchDownHandler",
@@ -120,33 +126,43 @@
 	      });
 	    }
 	  }, {
-	    key: "bindTouchEndHandler",
-	    value: function bindTouchEndHandler() {
+	    key: "bindPauseHandler",
+	    value: function bindPauseHandler() {
 	      var _this5 = this;
 	
+	      key('space', function (e) {
+	        e.preventDefault();
+	        _this5.grid.togglePlay.bind(_this5.grid)();
+	      });
+	    }
+	  }, {
+	    key: "bindTouchEndHandler",
+	    value: function bindTouchEndHandler() {
+	      var _this6 = this;
+	
 	      this.el.addEventListener("touchend", function (e) {
-	        _this5.grid.handleTouchEnd(e);
+	        _this6.grid.handleTouchEnd(e);
 	      });
 	      this.el.addEventListener("touchcancel", function (e) {
-	        _this5.grid.handleTouchEnd(e);
+	        _this6.grid.handleTouchEnd(e);
 	      });
 	    }
 	  }, {
 	    key: "bindTouchMoveHandler",
 	    value: function bindTouchMoveHandler() {
-	      var _this6 = this;
+	      var _this7 = this;
 	
 	      this.el.addEventListener("touchmove", function (e) {
-	        _this6.grid.handleTouchMove(e);
+	        _this7.grid.handleTouchMove(e);
 	      });
 	    }
 	  }, {
 	    key: "bindMouseMoveHandler",
 	    value: function bindMouseMoveHandler() {
-	      var _this7 = this;
+	      var _this8 = this;
 	
 	      this.el.addEventListener("mousemove", function (e) {
-	        _this7.grid.handleMouseMove(e);
+	        _this8.grid.handleMouseMove(e);
 	      });
 	    }
 	  }]);
@@ -155,10 +171,9 @@
 	}();
 	
 	document.addEventListener("DOMContentLoaded", function (event) {
-	  console.log("FOOOOOO");
 	  var canvas = document.getElementById("game-canvas");
-	  canvas.width = window.innerWidth - 30;
-	  canvas.height = window.innerHeight - 30;
+	  canvas.width = window.innerWidth - 4;
+	  canvas.height = window.innerHeight - 4;
 	  var context = canvas.getContext("2d");
 	  window.el = canvas;
 	  var tm = new Theremax(context, canvas);
@@ -185,7 +200,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var NUM_CONTROLS = 1;
+	var NUM_CONTROLS = 3;
 	
 	var DIM_X = 800;
 	var DIM_Y = 600;
@@ -194,20 +209,53 @@
 	  function Grid() {
 	    _classCallCheck(this, Grid);
 	
-	    DIM_X = window.innerWidth;
-	    DIM_Y = window.innerHeight;
-	    this.width = DIM_X;
-	    this.height = DIM_Y;
+	    DIM_X = window.innerWidth - 4;
+	    DIM_Y = window.innerHeight - 4;
+	    this.viewWidth = DIM_X;
+	    this.viewHeight = DIM_Y - 150;
+	    this.trayHeight = 150;
 	    this.controls = [];
 	    this.touches = [];
-	    this.focusObject = null;
 	    this.mouseDown = false;
 	    this.addControls();
 	    this.scroll = 0;
 	    this.click = null;
+	    this.paused = 0;
 	  }
 	
 	  _createClass(Grid, [{
+	    key: "togglePlay",
+	    value: function togglePlay() {
+	      if (this.paused) {
+	        this.play();
+	      } else {
+	        this.pause();
+	      }
+	    }
+	  }, {
+	    key: "pause",
+	    value: function pause() {
+	      this.touches.forEach(function (touch) {
+	        return touch.stop();
+	      });
+	      this.touches = [];
+	      this.mouseDown = false;
+	      this.click && this.click.stop();
+	      this.click = null;
+	      this.controls.forEach(function (control) {
+	        return control.stop();
+	      });
+	      this.paused = 1;
+	    }
+	  }, {
+	    key: "play",
+	    value: function play() {
+	      this.controls.forEach(function (control) {
+	        return control.start();
+	      });
+	      this.paused = 0;
+	    }
+	  }, {
 	    key: "getCursorPosition",
 	    value: function getCursorPosition(canvas, event) {
 	      var rect = canvas.getBoundingClientRect();
@@ -218,19 +266,23 @@
 	  }, {
 	    key: "handleMouseUp",
 	    value: function handleMouseUp(e) {
+	      if (this.paused) {
+	        return;
+	      }
 	      e.preventDefault();
 	      e.stopPropagation();
-	      this.click && this.click.stop();
+	      this.click && this.controls.indexOf(this.click) < 0 && this.click.stop();
 	      this.click = null;
 	      this.mouseDown = false;
-	      this.focusObject = null;
 	    }
 	  }, {
 	    key: "getClicked",
 	    value: function getClicked(pos) {
+	      var freeNode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+	
 	      var objects = this.allControls();
 	      for (var i = 0; i < objects.length; i++) {
-	        if (objects[i].isClicked(pos)) {
+	        if ((objects[i].dragged || freeNode) && objects[i].isClicked(pos)) {
 	          return objects[i];
 	        }
 	      }
@@ -252,32 +304,57 @@
 	    value: function handleTouchDown(e) {
 	      e.preventDefault();
 	      e.stopPropagation();
+	      if (this.paused) {
+	        return;
+	      }
 	      var posArray = this.touchMap(e);
 	
 	      var el, opts;
 	      for (var i = 0; i < posArray.length; i++) {
 	        if (el = this.getClicked(posArray[i])) {
-	          // Pass
+	          el.dragged = true;
+	          el.move(posArray[i]);
 	        } else {
 	          opts = {
 	            pos: posArray[i],
-	            grid: this
+	            grid: this,
+	            dragged: true
 	          };
 	          this.touches.push(new _control2.default(opts));
 	        }
 	      }
 	    }
 	  }, {
+	    key: "getClosestElement",
+	    value: function getClosestElement(elList, pos) {
+	      var cand = void 0,
+	          dist = void 0,
+	          el = void 0,
+	          candDist = void 0;
+	      for (var i = 0; i < elList.length; i++) {
+	        cand = elList[i];
+	        if (!el || (candDist = el.distanceTo(pos)) < dist) {
+	          dist = candDist;
+	          el = cand;
+	        }
+	      }
+	      return el;
+	    }
+	  }, {
 	    key: "handleTouchMove",
 	    value: function handleTouchMove(e) {
 	      e.preventDefault();
 	      e.stopPropagation();
+	      if (this.paused) {
+	        return;
+	      }
 	      var posArray = this.touchMap(e);
 	      var unmatchedPos = [];
 	      var matchedEls = [];
 	      var el = void 0;
 	      for (var i = 0; i < posArray.length; i++) {
-	        if (el = this.getClicked(posArray[i])) {
+	        // debugger;
+	        if (el = this.getClicked(posArray[i], false)) {
 	          matchedEls.push(el);
 	          el.move(posArray[i]);
 	        } else {
@@ -287,17 +364,17 @@
 	      // Clean up dropped notes.
 	
 	      var unmatchedEls = this.allControls().filter(function (u) {
-	        return matchedEls.indexOf(u) < 0;
+	        return u.dragged && matchedEls.indexOf(u) < 0;
 	      });
 	      while (unmatchedEls.length > unmatchedPos.length) {
 	        el = unmatchedEls.shift();
+	        el.dragged = false;
 	        this.controls.indexOf(el) < 0 && el.stop();
 	      }
 	      while (unmatchedPos.length > unmatchedEls.length) {
-	        this.touches.push(new _control2.default({ grid: this, pos: unmatchedPos.shift() }));
+	        this.touches.push(new _control2.default({ dragged: true, grid: this, pos: unmatchedPos.shift() }));
 	      }
 	      for (i = 0; i < unmatchedEls.length; i++) {
-	        console.log("Unmatched: ", unmatchedPos, unmatchedEls);
 	        unmatchedEls[i].move(unmatchedPos[i]);
 	      }
 	    }
@@ -306,6 +383,11 @@
 	    value: function handleTouchEnd(e) {
 	      var _this = this;
 	
+	      e.preventDefault();
+	      e.stopPropagation();
+	      if (this.paused) {
+	        return;
+	      }
 	      var posArray = this.touchMap(e);
 	      var newTouches = [];
 	
@@ -323,29 +405,28 @@
 	      for (var i = 0; i < this.touches.length; i++) {
 	        _loop();
 	      }
-	      if (this.focusObject && posArray.reduce(function (a, b) {
-	        return a || _this.focusObject.isClicked(b);
-	      }, 0)) {
-	        // pass
-	      } else {
-	        this.focusObject = null;
-	      }
 	      this.touches = newTouches;
 	    }
 	  }, {
 	    key: "handleMouseMove",
 	    value: function handleMouseMove(e) {
+	      if (this.paused) {
+	        return;
+	      }
 	      e.preventDefault();
 	      e.stopPropagation();
 	      var pos = this.getCursorPosition(e.target, e);
 	
-	      if (this.focusObject) {
-	        this.focusObject.move(pos);
+	      if (this.click) {
+	        this.click.move(pos);
 	      }
 	    }
 	  }, {
 	    key: "handleMouseDown",
 	    value: function handleMouseDown(e) {
+	      if (this.paused) {
+	        return;
+	      }
 	      var pos = this.getCursorPosition(e.target, e);
 	      if (this.mouseDown) {
 	        return;
@@ -356,17 +437,16 @@
 	      var objects = this.controls;
 	      for (var i = 0; i < objects.length; i++) {
 	        if (objects[i].isClicked(pos)) {
-	          this.focusObject = objects[i];
+	          this.click = objects[i];
 	          return;
 	        }
 	      }
-	      this.focusObject = new _control2.default({ pos: pos, grid: this });
-	      this.click = this.focusObject;
+	      this.click = new _control2.default({ pos: pos, grid: this });
 	    }
 	  }, {
 	    key: "allControls",
 	    value: function allControls() {
-	      return this.controls.concat(this.touches).concat(this.click).concat(this.focusObject).filter(function (p) {
+	      return this.touches.concat(this.click).concat(this.controls).filter(function (p) {
 	        return p;
 	      });
 	    }
@@ -375,12 +455,10 @@
 	    value: function addControls() {
 	      for (var i = 1; i < NUM_CONTROLS + 1; i++) {
 	        var opts = {
-	          // pos: [ 30, i * (1/(NUM_CONTROLS+1)) * (DIM_Y-30) + 15 ],
-	          pos: [30, i * (1 / (NUM_CONTROLS + 1)) * (DIM_Y - 30) + 15],
+	          pos: [i * (1 / (NUM_CONTROLS + 1)) * (this.viewWidth - 30) + 15, this.viewHeight + 75],
 	          grid: this,
-	          radius: 30
+	          control: true
 	        };
-	        console.log(opts);
 	        this.controls.push(new _control2.default(opts));
 	      }
 	    }
@@ -390,9 +468,37 @@
 	      var _this2 = this;
 	
 	      var norm = this.allControls().length;
-	      return DIM_Y / 2 + this.allControls().reduce(function (acc, el) {
-	        return acc + el.pos[1] * 0.5 / norm * Math.sin(_this2.scroll + x * 4 * Math.PI * (1 + el.pos[0] * 15 / DIM_X) / DIM_X);
-	      }, 0);
+	      return this.allControls().reduce(function (acc, el) {
+	        // if (this.paused) {
+	        //   return acc;
+	        // }
+	        var xMult = 4 * Math.PI * (1 + el.pos[0] * 15) / Math.pow(_this2.viewWidth, 2);
+	        var yMult = Math.max(0, 0.5 * (_this2.viewHeight - el.pos[1]) / norm);
+	        return acc + yMult * Math.sin(_this2.scroll + xMult * x);
+	      }, this.viewHeight / 2);
+	    }
+	  }, {
+	    key: "drawWave",
+	    value: function drawWave(ctx) {
+	      ctx.lineWidth = 3;
+	      ctx.lineJoin = "round";
+	      ctx.beginPath();
+	      ctx.moveTo(0, this.sin(0));
+	
+	      for (var i = 0; i <= this.viewWidth; i += 5) {
+	        ctx.lineTo(i, this.sin(i));
+	      }
+	
+	      ctx.globalAlpha = 0.5;
+	      ctx.strokeStyle = "#11AA11";
+	      ctx.lineWidth = 4;
+	      ctx.stroke();
+	      ctx.lineWidth = 12;
+	      ctx.stroke();
+	      ctx.lineWidth = 3;
+	      ctx.strokeStyle = "#CCFFDD"; //#33FF33";
+	      ctx.globalAlpha = 1;
+	      ctx.stroke();
 	    }
 	  }, {
 	    key: "draw",
@@ -401,27 +507,8 @@
 	      var saveStyle = ctx.strokeStyle;
 	      var saveWidth = ctx.lineWidth;
 	      var saveAlpha = ctx.globalAlpha;
-	      ctx.clearRect(0, 0, DIM_X, DIM_Y);
-	      ctx.lineWidth = 3;
-	      ctx.lineJoin = "round";
-	      ctx.beginPath();
-	      ctx.moveTo(0, this.sin(0));
-	
-	      for (var i = 0; i <= DIM_X; i += 5) {
-	        // console.log(i, this.sin(i));
-	        ctx.lineTo(i, this.sin(i));
-	      }
-	
-	      ctx.globalAlpha = 0.5;
-	      ctx.strokeStyle = "#11AA11";
-	      ctx.lineWidth = 5;
-	      ctx.stroke();
-	      ctx.lineWidth = 10;
-	      ctx.stroke();
-	      ctx.lineWidth = 3;
-	      ctx.strokeStyle = "#CCFFDD"; //#33FF33";
-	      ctx.globalAlpha = 1;
-	      ctx.stroke();
+	      ctx.clearRect(0, 0, this.viewWidth, DIM_Y);
+	      this.drawWave(ctx);
 	
 	      ctx.globalAlpha = saveAlpha;
 	      ctx.strokeStyle = saveStyle;
@@ -439,19 +526,19 @@
 	      for (var i = 0; i <= DIM_X; i += 80) {
 	        ctx.beginPath();
 	        ctx.moveTo(i, 0);
-	        ctx.lineTo(i, DIM_Y);
+	        ctx.lineTo(i, this.viewHeight);
 	        ctx.stroke();
 	      }
 	      var saveWidth = ctx.lineWidth;
 	      ctx.lineWidth = 5;
-	      for (i = 0; i <= DIM_Y / 2; i += 80) {
+	      for (i = 0; i <= this.viewHeight / 2; i += 80) {
 	        ctx.beginPath();
-	        ctx.moveTo(0, DIM_Y / 2 - i);
-	        ctx.lineTo(DIM_X, DIM_Y / 2 - i);
+	        ctx.moveTo(0, this.viewHeight / 2 - i);
+	        ctx.lineTo(this.viewWidth, this.viewHeight / 2 - i);
 	        ctx.stroke();
 	        ctx.beginPath();
-	        ctx.moveTo(0, DIM_Y / 2 + i);
-	        ctx.lineTo(DIM_X, DIM_Y / 2 + i);
+	        ctx.moveTo(0, this.viewHeight / 2 + i);
+	        ctx.lineTo(this.viewWidth, this.viewHeight / 2 + i);
 	        ctx.stroke();
 	        ctx.lineWidth = saveWidth;
 	      }
@@ -459,12 +546,15 @@
 	  }, {
 	    key: "step",
 	    value: function step() {
-	      this.scroll = this.scroll + 2 / Math.PI;
+	      if (!this.paused) {
+	        this.scroll = this.scroll + 2 / Math.PI;
+	      }
 	    }
 	  }, {
 	    key: "wrap",
 	    value: function wrap(pos) {
-	      return [Math.max(0, Math.min(DIM_X, pos[0])), Math.max(0, Math.min(DIM_Y, pos[1]))];
+	      var ret = [Math.max(0, Math.min(this.viewWidth, pos[0])), Math.max(0, Math.min(DIM_Y, pos[1]))];
+	      return ret;
 	    }
 	  }]);
 	
@@ -499,18 +589,67 @@
 	  function Control(options) {
 	    _classCallCheck(this, Control);
 	
-	    this.pos = options.pos || [0, 0];
-	    this.radius = options.radius || 30;
-	    this.color = options.color || "#FF0000";
+	    this.pos = options.grid.wrap(options.pos) || [0, 0];
+	    this.radius = options.radius || 40;
+	    this.faceColor = options.control && "#cdae64";
+	    this.ridgeColor = options.control && "#895537";
 	    this.grid = options.grid;
+	    this.dragged = Boolean(options.dragged);
 	
-	    this.note = new _note2.default(this.pos[0] / this.grid.width, this.pos[1] / this.grid.height);
+	    // debugger;
+	    this.note = new _note2.default(this.pos[0] / this.grid.viewWidth, Math.max(0, 1 - this.pos[1] / this.grid.viewHeight));
 	  }
 	
 	  _createClass(Control, [{
 	    key: "stop",
 	    value: function stop() {
 	      this.note.stop();
+	    }
+	  }, {
+	    key: "start",
+	    value: function start() {
+	      this.note.start();
+	    }
+	  }, {
+	    key: "distanceTo",
+	    value: function distanceTo(pos) {
+	      return Math.pow(Math.pow(this.pos[0] - pos[0]) + Math.pow(this.pos[1] - pos[1]), .5);
+	    }
+	  }, {
+	    key: "drawSlice",
+	    value: function drawSlice(ctx, opts) {
+	      var strokeStyle = ctx.strokeStyle,
+	          fillStyle = ctx.fillStyle,
+	          lineWidth = ctx.lineWidth,
+	          globalAlpha = ctx.globalAlpha;
+	
+	      ctx.fillStyle = opts.fillStyle || "#FFFFFF";
+	      ctx.globalAlpha = opts.globalAlpha || 1.0;
+	      ctx.beginPath();
+	      ctx.moveTo.apply(ctx, _toConsumableArray(this.pos));
+	      ctx.arc.apply(ctx, _toConsumableArray(this.pos).concat([opts.radius || this.radius, opts.beginning, opts.end]));
+	      ctx.fill();
+	      ctx.globalAlpha = globalAlpha;
+	      ctx.fillStyle = fillStyle;
+	    }
+	  }, {
+	    key: "drawSpokes",
+	    value: function drawSpokes(ctx) {
+	      var globalAlpha = ctx.globalAlpha,
+	          strokeStyle = ctx.strokeStyle,
+	          lineWidth = ctx.lineWidth;
+	
+	      ctx.strokeStyle = "#000";
+	      ctx.globalAlpha = 0.55;
+	      for (var i = 0; i < 36; i++) {
+	        ctx.beginPath();
+	        ctx.moveTo.apply(ctx, _toConsumableArray(this.pos));
+	        ctx.lineTo.apply(ctx, _toConsumableArray(this.arcPos(Math.PI / 18 * i)));
+	        ctx.stroke();
+	      }
+	      ctx.strokeStyle = strokeStyle;
+	      ctx.lineWidth = lineWidth;
+	      ctx.globalAlpha = globalAlpha;
 	    }
 	  }, {
 	    key: "draw",
@@ -520,17 +659,53 @@
 	          lineWidth = ctx.lineWidth,
 	          globalAlpha = ctx.globalAlpha;
 	
-	      ctx.beginPath();
-	      ctx.fillStyle = this.color;
-	      ctx.arc.apply(ctx, _toConsumableArray(this.pos).concat([this.radius, 0, 2 * Math.PI, false]));
-	      ctx.fill();
+	      this.drawSlice(ctx, {
+	        fillStyle: this.ridgeColor,
+	        globalAlpha: 1.0,
+	        beginning: 0,
+	        end: 2 * Math.PI
+	      });
+	      //
+	      // this.drawSlice(ctx, {
+	      //   fillStyle: "#000",
+	      //   globalAlpha: 0.25,
+	      //   beginning: 0,
+	      //   end: 2 * Math.PI,
+	      // });
+	      this.drawSlice(ctx, {
+	        fillStyle: "#000",
+	        globalAlpha: 0.25,
+	        beginning: 0,
+	        end: 2 * Math.PI,
+	        radius: this.radius * 0.9
+	      });
+	      this.drawSpokes(ctx);
+	
+	      this.drawSlice(ctx, {
+	        fillStyle: this.faceColor,
+	        globalAlpha: 1.0,
+	        beginning: 0,
+	        end: 2 * Math.PI,
+	        radius: this.radius * 0.9 - 2
+	      });
+	
+	      ctx.lineWidth = lineWidth;
+	      ctx.globalAlpha = globalAlpha;
 	      ctx.fillStyle = fillStyle;
+	      ctx.strokeStyle = strokeStyle;
+	    }
+	  }, {
+	    key: "arcPos",
+	    value: function arcPos(angle) {
+	      var radius = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+	
+	      return [this.pos[0] + Math.cos(angle) * (radius || this.radius), this.pos[1] + Math.sin(angle) * (radius || this.radius)];
 	    }
 	  }, {
 	    key: "move",
 	    value: function move(pos) {
 	      this.pos = this.grid.wrap(pos);
-	      this.note.shift(this.pos[0] / this.grid.width, this.pos[1] / this.grid.height);
+	      this.note.shift(this.pos[0] / this.grid.viewWidth, Math.max(1 - this.pos[1] / this.grid.viewHeight, 0));
 	      return this.pos;
 	    }
 	  }, {
@@ -595,8 +770,9 @@
 	  _createClass(Note, [{
 	    key: "shift",
 	    value: function shift(pFreq, pVol) {
-	      this.gainNode.gain.value = pVol * .2;
+	      this.volume = pVol * .2;
 	      this.oscillatorNode.frequency.value = 100 * Math.pow(16, pFreq);
+	      this.start();
 	    }
 	  }, {
 	    key: "start",
