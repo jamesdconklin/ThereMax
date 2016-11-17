@@ -134,6 +134,7 @@
 	          return;
 	        }
 	        e.preventDefault();
+	        $(".menu-overlay").toggleClass("hidden");
 	        _this5.grid.togglePlay.bind(_this5.grid)();
 	      });
 	
@@ -224,16 +225,15 @@
 	
 	    DIM_X = window.innerWidth - 4;
 	    DIM_Y = window.innerHeight - 4;
-	    this.viewWidth = DIM_X;
-	    this.viewHeight = DIM_Y - 150;
 	    this.trayHeight = 150;
+	    this.viewWidth = DIM_X;
+	    this.viewHeight = DIM_Y - this.trayHeight;
 	    this.controls = [];
 	    this.touches = [];
-	    this.mouseDown = false;
 	    this.addControls();
 	    this.scroll = 0;
-	    this.click = null;
-	    this.paused = 0;
+	
+	    this.pause();
 	  }
 	
 	  _createClass(Grid, [{
@@ -572,7 +572,7 @@
 	
 	      ctx.fillStyle = "#986445";
 	      ctx.beginPath();
-	      ctx.rect(0, this.viewHeight, this.viewWidth, 150);
+	      ctx.rect(0, this.viewHeight, this.viewWidth, this.trayHeight);
 	      ctx.fill();
 	      ctx.beginPath();
 	      ctx.fillStyle = "#333";

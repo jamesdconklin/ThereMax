@@ -3,12 +3,53 @@
   <head>
     <meta charset="utf-8">
     <title>ThereMax - A Touchscreen Friendly Browser Instrument</title>
-    <script src="./lib/keymaster.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="./bundle.js">
     </script>
     <link rel="stylesheet" href="./css/reset.css" charset="utf-8">
+    <link rel="stylesheet" href="./css/menu.css" charset="utf-8">
   </head>
   <body style="background:black">
-    <canvas id="game-canvas" width="802" height="642"></canvas>
+    <div class="menu-overlay">
+
+      <div class="menu">
+        <p>Welcome to THEREMAX, the touchscreen synthesizer!</p>
+
+        <p>
+          Press the spacebar to switch between this screen and the THEREMAX
+          interface.
+        </p>
+
+        <p>
+          Touch or click the grid to play a tone and render a corresponding
+          waveform. The x-axis controls pitch, and the y-axis controls volume.
+        </p>
+
+        <p>
+          Drag the control knobs below onto the grid to set lingering notes.
+        </p>
+
+        <p>
+          If you have a touchscreen, you can play multiple notes at once
+          by touching the screen in multiple places.
+        </p>
+
+
+        <p>
+          If you'd like to learn more about the goof who put this all
+          together, check out the links below!
+        </p>
+
+        <br/>
+
+        <div class="menu-links">
+          <a href="https://github.com/jamesdconklin/ThereMax">Project Page</a>
+          <a href="https://github.com/jamesdconklin">James' Github</a>
+          <a href="https://www.linkedin.com/in/jamesdconklin">James' LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <canvas id="game-canvas" width="802" height="642" autofocus></canvas>
   </body>
 </html>

@@ -1,0 +1,33 @@
+::-webkit-scrollbar {
+  display: none; }
+
+.menu-overlay {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 4px;
+  bottom: 154px;
+  overflow-y: scroll;
+  background-color: black; }
+  .menu-overlay.hidden {
+    visibility: hidden; }
+    .menu-overlay.hidden * {
+      visibility: hidden; }
+  .menu-overlay .menu {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+    text-shadow: 0 0 5px green;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 25px;
+    color: #2D6; }
+    .menu-overlay .menu p {
+      margin-top: 15px;
+      margin-bottom: 15px;
+      line-height: 1.5; }
+    .menu-overlay .menu .menu-links {
+      display: flex;
+      justify-content: space-around; }

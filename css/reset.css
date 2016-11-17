@@ -1,5 +1,11 @@
-body {
+body, div, p, a {
+  line-height: normal;
   margin: 0px;
   padding: 0px;
   border: none;
+  color: inherit;
+  font: inherit;
+  font-size: inherit;
+  text-decoration: none;
+  text-shadow: inherit;
 }
