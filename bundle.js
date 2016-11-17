@@ -91,7 +91,6 @@
 	        _this.grid.step();
 	        _this.grid.draw(_this.ctx);
 	      }, 40);
-	      // TODO: Listener for resize
 	    }
 	  }, {
 	    key: "bindMouseDownHandler",
@@ -130,10 +129,18 @@
 	    value: function bindPauseHandler() {
 	      var _this5 = this;
 	
-	      key('space', function (e) {
+	      window.addEventListener("keyup", function (e) {
+	        if (e.code !== "Space") {
+	          return;
+	        }
 	        e.preventDefault();
 	        _this5.grid.togglePlay.bind(_this5.grid)();
 	      });
+	
+	      // key('space', (e) => {
+	      //   e.preventDefault();
+	      //   this.grid.togglePlay.bind(this.grid)();
+	      // });
 	    }
 	  }, {
 	    key: "bindTouchEndHandler",
@@ -184,17 +191,23 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _control = __webpack_require__(2);
 	
 	var _control2 = _interopRequireDefault(_control);
+	
+	var _ephemeral = __webpack_require__(4);
+	
+	var _ephemeral2 = _interopRequireDefault(_ephemeral);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -224,7 +237,7 @@
 	  }
 	
 	  _createClass(Grid, [{
-	    key: "togglePlay",
+	    key: 'togglePlay',
 	    value: function togglePlay() {
 	      if (this.paused) {
 	        this.play();
@@ -233,7 +246,7 @@
 	      }
 	    }
 	  }, {
-	    key: "pause",
+	    key: 'pause',
 	    value: function pause() {
 	      this.touches.forEach(function (touch) {
 	        return touch.stop();
@@ -248,7 +261,7 @@
 	      this.paused = 1;
 	    }
 	  }, {
-	    key: "play",
+	    key: 'play',
 	    value: function play() {
 	      this.controls.forEach(function (control) {
 	        return control.start();
@@ -256,7 +269,7 @@
 	      this.paused = 0;
 	    }
 	  }, {
-	    key: "getCursorPosition",
+	    key: 'getCursorPosition',
 	    value: function getCursorPosition(canvas, event) {
 	      var rect = canvas.getBoundingClientRect();
 	      var x = event.clientX - rect.left;
@@ -264,7 +277,7 @@
 	      return [x, y];
 	    }
 	  }, {
-	    key: "handleMouseUp",
+	    key: 'handleMouseUp',
 	    value: function handleMouseUp(e) {
 	      if (this.paused) {
 	        return;
@@ -276,7 +289,7 @@
 	      this.mouseDown = false;
 	    }
 	  }, {
-	    key: "getClicked",
+	    key: 'getClicked',
 	    value: function getClicked(pos) {
 	      var freeNode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 	
@@ -289,7 +302,7 @@
 	      return null;
 	    }
 	  }, {
-	    key: "touchMap",
+	    key: 'touchMap',
 	    value: function touchMap(e) {
 	      var posArray = [];
 	      for (var j = 0; j < e.targetTouches.length; j++) {
@@ -300,7 +313,16 @@
 	      return posArray;
 	    }
 	  }, {
-	    key: "handleTouchDown",
+	    key: 'checkBounds',
+	    value: function checkBounds(pos) {
+	      var _pos = _slicedToArray(pos, 2),
+	          x = _pos[0],
+	          y = _pos[1];
+	
+	      return x <= this.viewWidth && x >= 0 && y <= this.viewHeight && y >= 0;
+	    }
+	  }, {
+	    key: 'handleTouchDown',
 	    value: function handleTouchDown(e) {
 	      e.preventDefault();
 	      e.stopPropagation();
@@ -314,18 +336,18 @@
 	        if (el = this.getClicked(posArray[i])) {
 	          el.dragged = true;
 	          el.move(posArray[i]);
-	        } else {
+	        } else if (this.checkBounds(posArray[i])) {
 	          opts = {
 	            pos: posArray[i],
 	            grid: this,
 	            dragged: true
 	          };
-	          this.touches.push(new _control2.default(opts));
+	          this.touches.push(new _ephemeral2.default(opts));
 	        }
 	      }
 	    }
 	  }, {
-	    key: "getClosestElement",
+	    key: 'getClosestElement',
 	    value: function getClosestElement(elList, pos) {
 	      var cand = void 0,
 	          dist = void 0,
@@ -341,7 +363,7 @@
 	      return el;
 	    }
 	  }, {
-	    key: "handleTouchMove",
+	    key: 'handleTouchMove',
 	    value: function handleTouchMove(e) {
 	      e.preventDefault();
 	      e.stopPropagation();
@@ -353,7 +375,6 @@
 	      var matchedEls = [];
 	      var el = void 0;
 	      for (var i = 0; i < posArray.length; i++) {
-	        // debugger;
 	        if (el = this.getClicked(posArray[i], false)) {
 	          matchedEls.push(el);
 	          el.move(posArray[i]);
@@ -361,7 +382,6 @@
 	          unmatchedPos.push(posArray[i]);
 	        }
 	      }
-	      // Clean up dropped notes.
 	
 	      var unmatchedEls = this.allControls().filter(function (u) {
 	        return u.dragged && matchedEls.indexOf(u) < 0;
@@ -372,17 +392,18 @@
 	        this.controls.indexOf(el) < 0 && el.stop();
 	      }
 	      while (unmatchedPos.length > unmatchedEls.length) {
-	        this.touches.push(new _control2.default({ dragged: true, grid: this, pos: unmatchedPos.shift() }));
+	        this.touches.push(new _ephemeral2.default({ dragged: true, grid: this, pos: unmatchedPos.shift() }));
 	      }
 	      for (i = 0; i < unmatchedEls.length; i++) {
 	        unmatchedEls[i].move(unmatchedPos[i]);
 	      }
 	    }
 	  }, {
-	    key: "handleTouchEnd",
+	    key: 'handleTouchEnd',
 	    value: function handleTouchEnd(e) {
 	      var _this = this;
 	
+	      console.log("Touch end");
 	      e.preventDefault();
 	      e.stopPropagation();
 	      if (this.paused) {
@@ -405,10 +426,25 @@
 	      for (var i = 0; i < this.touches.length; i++) {
 	        _loop();
 	      }
+	
+	      var _loop2 = function _loop2() {
+	        var el = _this.controls[i];
+	        if (posArray.reduce(function (a, pos) {
+	          return a || el.isClicked(pos);
+	        }, 0)) {
+	          // pass
+	        } else {
+	          el.dragged = false;
+	        }
+	      };
+	
+	      for (i = 0; i < this.controls.length; i++) {
+	        _loop2();
+	      }
 	      this.touches = newTouches;
 	    }
 	  }, {
-	    key: "handleMouseMove",
+	    key: 'handleMouseMove',
 	    value: function handleMouseMove(e) {
 	      if (this.paused) {
 	        return;
@@ -422,7 +458,7 @@
 	      }
 	    }
 	  }, {
-	    key: "handleMouseDown",
+	    key: 'handleMouseDown',
 	    value: function handleMouseDown(e) {
 	      if (this.paused) {
 	        return;
@@ -441,17 +477,19 @@
 	          return;
 	        }
 	      }
-	      this.click = new _control2.default({ pos: pos, grid: this });
+	      if (this.checkBounds(pos)) {
+	        this.click = new _ephemeral2.default({ pos: pos, grid: this });
+	      }
 	    }
 	  }, {
-	    key: "allControls",
+	    key: 'allControls',
 	    value: function allControls() {
 	      return this.touches.concat(this.click).concat(this.controls).filter(function (p) {
 	        return p;
 	      });
 	    }
 	  }, {
-	    key: "addControls",
+	    key: 'addControls',
 	    value: function addControls() {
 	      for (var i = 1; i < NUM_CONTROLS + 1; i++) {
 	        var opts = {
@@ -463,7 +501,7 @@
 	      }
 	    }
 	  }, {
-	    key: "sin",
+	    key: 'sin',
 	    value: function sin(x) {
 	      var _this2 = this;
 	
@@ -478,7 +516,7 @@
 	      }, this.viewHeight / 2);
 	    }
 	  }, {
-	    key: "drawWave",
+	    key: 'drawWave',
 	    value: function drawWave(ctx) {
 	      ctx.lineWidth = 3;
 	      ctx.lineJoin = "round";
@@ -501,7 +539,14 @@
 	      ctx.stroke();
 	    }
 	  }, {
-	    key: "draw",
+	    key: 'drawGroup',
+	    value: function drawGroup(ctx, group) {
+	      for (var i = 0; i < group.length; i++) {
+	        group[i].draw(ctx);
+	      }
+	    }
+	  }, {
+	    key: 'draw',
 	    value: function draw(ctx) {
 	      // TODO: THIS MUST BE BROKEN UP.
 	      var saveStyle = ctx.strokeStyle;
@@ -513,13 +558,32 @@
 	      ctx.globalAlpha = saveAlpha;
 	      ctx.strokeStyle = saveStyle;
 	      ctx.lineWidth = saveWidth;
-	      this.allControls().forEach(function (object) {
-	        object && object.draw(ctx);
-	      });
 	      this.drawGrid(ctx);
+	      this.drawGroup(ctx, this.touches);
+	      this.click && this.click.draw(ctx);
+	      this.drawPanel(ctx);
+	      this.drawGroup(ctx, this.controls);
 	    }
 	  }, {
-	    key: "drawGrid",
+	    key: 'drawPanel',
+	    value: function drawPanel(ctx) {
+	      var fillStyle = ctx.fillStyle,
+	          globalAlpha = ctx.globalAlpha;
+	
+	      ctx.fillStyle = "#986445";
+	      ctx.beginPath();
+	      ctx.rect(0, this.viewHeight, this.viewWidth, 150);
+	      ctx.fill();
+	      ctx.beginPath();
+	      ctx.fillStyle = "#333";
+	      ctx.globalAlpha = 0.35;
+	      ctx.rect(0, this.viewHeight, this.viewWidth, 5);
+	      ctx.fill();
+	      ctx.fillStyle = fillStyle;
+	      ctx.globalAlpha = globalAlpha;
+	    }
+	  }, {
+	    key: 'drawGrid',
 	    value: function drawGrid(ctx) {
 	      var saveStyle = ctx.strokeStyle;
 	      ctx.strokeStyle = "#AAAAAA";
@@ -544,14 +608,14 @@
 	      }
 	    }
 	  }, {
-	    key: "step",
+	    key: 'step',
 	    value: function step() {
 	      if (!this.paused) {
 	        this.scroll = this.scroll + 2 / Math.PI;
 	      }
 	    }
 	  }, {
-	    key: "wrap",
+	    key: 'wrap',
 	    value: function wrap(pos) {
 	      var ret = [Math.max(0, Math.min(this.viewWidth, pos[0])), Math.max(0, Math.min(DIM_Y, pos[1]))];
 	      return ret;
@@ -592,7 +656,7 @@
 	    this.pos = options.grid.wrap(options.pos) || [0, 0];
 	    this.radius = options.radius || 40;
 	    this.faceColor = options.control && "#cdae64";
-	    this.ridgeColor = options.control && "#895537";
+	    this.ridgeColor = options.control && "#543210"; // "#895537";
 	    this.grid = options.grid;
 	    this.dragged = Boolean(options.dragged);
 	
@@ -635,16 +699,20 @@
 	  }, {
 	    key: "drawSpokes",
 	    value: function drawSpokes(ctx) {
+	      var numSpokes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 18;
+	      var fromRadius = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+	      var toRadius = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
 	      var globalAlpha = ctx.globalAlpha,
 	          strokeStyle = ctx.strokeStyle,
 	          lineWidth = ctx.lineWidth;
 	
 	      ctx.strokeStyle = "#000";
 	      ctx.globalAlpha = 0.55;
+	      ctx.lineWidth = 2;
 	      for (var i = 0; i < 36; i++) {
 	        ctx.beginPath();
-	        ctx.moveTo.apply(ctx, _toConsumableArray(this.pos));
-	        ctx.lineTo.apply(ctx, _toConsumableArray(this.arcPos(Math.PI / 18 * i)));
+	        ctx.moveTo.apply(ctx, _toConsumableArray(this.arcPos(Math.PI / numSpokes * i, this.radius * fromRadius)));
+	        ctx.lineTo.apply(ctx, _toConsumableArray(this.arcPos(Math.PI / numSpokes * i)).concat([this.radius * toRadius]));
 	        ctx.stroke();
 	      }
 	      ctx.strokeStyle = strokeStyle;
@@ -665,13 +733,7 @@
 	        beginning: 0,
 	        end: 2 * Math.PI
 	      });
-	      //
-	      // this.drawSlice(ctx, {
-	      //   fillStyle: "#000",
-	      //   globalAlpha: 0.25,
-	      //   beginning: 0,
-	      //   end: 2 * Math.PI,
-	      // });
+	
 	      this.drawSlice(ctx, {
 	        fillStyle: "#000",
 	        globalAlpha: 0.25,
@@ -696,10 +758,13 @@
 	    }
 	  }, {
 	    key: "arcPos",
-	    value: function arcPos(angle) {
-	      var radius = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-	
-	      return [this.pos[0] + Math.cos(angle) * (radius || this.radius), this.pos[1] + Math.sin(angle) * (radius || this.radius)];
+	    value: function arcPos(angle, radius) {
+	      if (radius === undefined) {
+	        radius = this.radius;
+	      } else {
+	        radius = this.radius * radius;
+	      }
+	      return [this.pos[0] + Math.cos(angle) * radius, this.pos[1] + Math.sin(angle) * radius];
 	    }
 	  }, {
 	    key: "move",
@@ -790,6 +855,70 @@
 	}();
 	
 	exports.default = Note;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _control = __webpack_require__(2);
+	
+	var _control2 = _interopRequireDefault(_control);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Ephemeral = function (_Control) {
+	  _inherits(Ephemeral, _Control);
+	
+	  function Ephemeral(options) {
+	    _classCallCheck(this, Ephemeral);
+	
+	    return _possibleConstructorReturn(this, (Ephemeral.__proto__ || Object.getPrototypeOf(Ephemeral)).call(this, options));
+	  }
+	
+	  _createClass(Ephemeral, [{
+	    key: "draw",
+	    value: function draw(ctx) {
+	      var strokeStyle = ctx.strokeStyle,
+	          lineWidth = ctx.lineWidth,
+	          globalAlpha = ctx.globalAlpha;
+	
+	      for (var i = 0; i < 5; i++) {
+	        var radius = 0.5 * this.radius * ((this.grid.scroll / 6 + i) % 5);
+	        ctx.beginPath();
+	        ctx.strokeStyle = "#34FF56";
+	        ctx.lineWidth = 7;
+	        // debugger;
+	        ctx.globalAlpha = 5 / radius;
+	        ctx.arc.apply(ctx, _toConsumableArray(this.pos).concat([radius, 0, 2 * Math.PI]));
+	        ctx.stroke();
+	      }
+	
+	      ctx.lineWidth = lineWidth;
+	      ctx.globalAlpha = globalAlpha;
+	      ctx.strokeStyle = strokeStyle;
+	    }
+	  }]);
+	
+	  return Ephemeral;
+	}(_control2.default);
+	
+	exports.default = Ephemeral;
 
 /***/ }
 /******/ ]);
