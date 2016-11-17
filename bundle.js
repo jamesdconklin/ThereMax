@@ -137,11 +137,6 @@
 	        $(".menu-overlay").toggleClass("hidden");
 	        _this5.grid.togglePlay.bind(_this5.grid)();
 	      });
-	
-	      // key('space', (e) => {
-	      //   e.preventDefault();
-	      //   this.grid.togglePlay.bind(this.grid)();
-	      // });
 	    }
 	  }, {
 	    key: "bindTouchEndHandler",
@@ -313,6 +308,14 @@
 	      return posArray;
 	    }
 	  }, {
+	    key: 'sendSpace',
+	    value: function sendSpace() {
+	      console.log("SENDSPACE");
+	      var event = new Event("keyup");
+	      event.code = "Space";
+	      window.dispatchEvent(event);
+	    }
+	  }, {
 	    key: 'checkBounds',
 	    value: function checkBounds(pos) {
 	      var _pos = _slicedToArray(pos, 2),
@@ -326,17 +329,22 @@
 	    value: function handleTouchDown(e) {
 	      e.preventDefault();
 	      e.stopPropagation();
+	      var posArray = this.touchMap(e);
 	      if (this.paused) {
+	        if (posArray.length === 1 && posArray[0][1] > this.viewHeight) {
+	          this.sendSpace();
+	        }
 	        return;
 	      }
-	      var posArray = this.touchMap(e);
 	
-	      var el, opts;
+	      var el, opts, selected;
 	      for (var i = 0; i < posArray.length; i++) {
 	        if (el = this.getClicked(posArray[i])) {
+	          selected = true;
 	          el.dragged = true;
 	          el.move(posArray[i]);
 	        } else if (this.checkBounds(posArray[i])) {
+	          selected = true;
 	          opts = {
 	            pos: posArray[i],
 	            grid: this,
@@ -344,6 +352,9 @@
 	          };
 	          this.touches.push(new _ephemeral2.default(opts));
 	        }
+	      }
+	      if (!selected) {
+	        this.sendSpace();
 	      }
 	    }
 	  }, {
@@ -403,7 +414,6 @@
 	    value: function handleTouchEnd(e) {
 	      var _this = this;
 	
-	      console.log("Touch end");
 	      e.preventDefault();
 	      e.stopPropagation();
 	      if (this.paused) {
