@@ -514,7 +514,9 @@
 	    value: function sin(x) {
 	      var _this2 = this;
 	
-	      var norm = this.allControls().length;
+	      var norm = 1.25 * this.allControls().filter(function (control) {
+	        return control.active();
+	      }).length;
 	      return this.allControls().reduce(function (acc, el) {
 	        var xMult = 4 * Math.PI * (1 + el.pos[0] * 15) / Math.pow(_this2.viewWidth, 2);
 	        var yMult = Math.max(0, 0.5 * (_this2.viewHeight - el.pos[1]) / norm);
@@ -669,11 +671,15 @@
 	    this.ridgeColor = options.control && "#543210"; // "#895537";
 	    this.grid = options.grid;
 	    this.dragged = Boolean(options.dragged);
-	
 	    this.note = new _note2.default(this.pos[0] / this.grid.viewWidth, Math.max(0, 1 - this.pos[1] / this.grid.viewHeight));
 	  }
 	
 	  _createClass(Control, [{
+	    key: "active",
+	    value: function active() {
+	      return this.note.active();
+	    }
+	  }, {
 	    key: "stop",
 	    value: function stop() {
 	      this.note.stop();
@@ -842,6 +848,11 @@
 	  }
 	
 	  _createClass(Note, [{
+	    key: "active",
+	    value: function active() {
+	      return this.volume > 0;
+	    }
+	  }, {
 	    key: "shift",
 	    value: function shift(pFreq, pVol) {
 	      this.volume = pVol * .2;
