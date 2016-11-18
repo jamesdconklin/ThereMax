@@ -1,7 +1,8 @@
 # ThereMax
 
 [Live Site @ GitHub Pages](https://jamesdconklin.github.io/ThereMax)
-[Project Site @ GiutHub](https://github.com/jamesdconklin/ThereMax)
+
+[Project Site @ GitHub](https://github.com/jamesdconklin/ThereMax)
 
 ThereMax is an engaging in-browser synthesizer inspired by the theremin
 and by oscilloscopes. It translates touches or clicks upon a grid to a
