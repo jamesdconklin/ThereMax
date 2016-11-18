@@ -1,73 +1,161 @@
 # ThereMax
-A simple theremin-esque in-browser instrument. 
 
-A theremin is an early electronic instrumment whose operator can control its sound by varying the distance between his or her 
-hands and a separate sensing antennae for each of pitch and amplitude. This project will create a similar instrument whose 
-pitch and amplitude will be controlled by the x and y positions of a cursor on a screen. 
+[Live Site @ GitHub Pages](https://jamesdconklin.github.io/ThereMax)
+[Project Site @ GiutHub](https://github.com/jamesdconklin/ThereMax)
 
-### Functionality & MVP
+ThereMax is an engaging in-browser synthesizer inspired by the theremin
+and by oscilloscopes. It translates touches or clicks upon a grid to a
+multitude of sinusoidal tones and waveforms. The app is developed in
+JavaScript, working on a vanilla HTML5 canvas, in a minimal HTML/CSS
+structure.
 
-At a minimum, this instrument will:
+## Features/"Pages"
+ - Landing/Instructions
+ - Instrument grid
 
- - [ ] Emit a tone based on the position of a held-down cursor within the view element.
- - [ ] Render an animated wave form roughly similar to the tone(s) being played. 
- - [ ] Render a grid marking identifiable notes. 
- - [ ] Support place control nodes onto the screen to play tones while the cursor plays other tones. 
- 
-To epxplain functionality, the project will include at a minimum:
+### Instructions/Welcome
 
- - [ ] A help modal explaining the features and controls
- - [ ] A production readme. 
- 
-### Wireframes. 
+![landing]
 
-The instrument will consist of a single screen with the waveform view and links to the help modal and the project github.
-Game controls will be simple - click and hold to play a note or click and release to place a draggable control node. 
+The landing page is a simple div covering the canvas and providing instructions on how to use the interface. Pressing space or clicking or
+tapping the high-tech power button on the panel below the screen toggles
+a class to toggle whether or not the instruction screen renders. Nothing
+fancy.
 
-![waveform](./docs/waveform.png)
+### Synthesizer Interface
 
-### Architecture & Technologies
+Clicking or touching on the synthesizer screen generates a tone and
+renders an appropriate waveform. The x axis controls pitch, from about
+100 Hz on the left to 1600Hz on the right, increasing exponentially.
 
-This instrument will be built with the following: 
+#### Rendering the Wave.
 
- - [ ] Vanilla JavaScript, jQuery, and JavaScript's AudioContext for overall llgic and tone generation.
- - [ ] HTML5 Canvas for rendering the controls and waveform. 
- - [ ] Should vanilla canvas prove insufficient, I may try to integrate BBC's peak.js. 
- - [ ] Webpack to package the project scripts. 
+Rendering the wave is simple. Each draw cycle, we increment a scroll
+value to move the wave along, and add sine function values for each
+`Control` node to calculate the summed sine value for each point as
+we iterate through the grid's x range. Then we simply call the canvas
+`lineTo` method to draw the resulting function.
 
-Apart from the setup/entry file, the project will be decomposed as folows: 
+```js
+// drawing the waveform
+ctx.beginPath();
+ctx.moveTo(0, this.sin(0));
 
- - [ ] `control.js`, defining a single control point, ephemeral or otherwise. This will define `draw`, `play`, `gain`,
- `pitch`, and `stop` methods that will render the control node to the screen, start playing a sound, change the tone's 
- volume, change the tone's pitch, and stop playing a sound, respectively. 
- - [ ] `theremax.js`, defining the view window, will aggregate and render control nodes, provide the interface for creating,
- moving, and destroying them, and will render the viewport grid and the waveform. 
- 
- ### Implementation Timeline:
- 
-**Day 1** Set up necessary node modules. Review AudoContext. Organize administrative files (`webpack.config.js`, `packages.json`). Write control class. Implement methods outlined above. Goals for the day: 
-   - [ ] Tone start/stop on object creation/destruction: 
-   - [ ] Smooth tone pitch and volume change based on changes in "position" of control node. 
- 
-**Day 2** Write enough of theremax class to support drag-and-drop of control nodes along with appropriate shift in their
- pitch and volume. Goals for the day: 
-   - [ ] Render simple circle for control nodes on the theremax grid. 
-   - [ ] Click-release to place/delete control nodes
-   - [ ] Click-hold to play sound without placing permanent control node
-   - [ ] Click-drag on control node to move it. 
- 
-**Day 3** Get theremax to render a waveform based on pitch/amplitude of aggregated control nodes. Largely implemented already as part of exploration over the weekend. Will need refactoring and aesthetic tweaking. Goals for the day: 
-   - [ ] Render grid with bold "zero" line.
-   - [ ] Render animated waveform that roughly represents tone played. 
-   - [ ] If possible, consult with someone musically minded to figure out logarithmic scaling so that vertical lines correspond to known notes. 
- 
-**Day 4** Create help modal and self-advertising links. Polish styling - either render from image for control nodes or devise custom draw scheme. Render glare/screen effect on main window. Integrate links with appropriate CSS. Goals for the day. 
-   - [ ] Uninitiated user should be able to understand how to use app within ten seconds of opening it. 
-   - [ ] App should look like something more than a raw canvas drawing. Scratch version of the wave form needs minor tweaks more in terms of behavior than of color/glow styling, but the flat black screen and float monochrome control nodes will need a bit of work. 
- 
-### Bonus Features:
-  - [ ] Support multi-touch. Test on laptop if screen supports it, else, this bonus is dependent on...
-  - [ ] Ensure proper functioning on mobile devices. 
-  - [ ] Allow sounds other than pure sine waves. 
-  
- 
+for (var i = 0; i <= this.viewWidth; i += 5) {
+  ctx.lineTo(i, this.sin(i));
+}
+```
+
+```js
+// Calculating composite sine function values.
+sin(x) {
+  let norm = this.allControls().length;
+  return this.allControls().reduce(
+    (acc, el) => {
+      let xMult = 4 * Math.PI * (1 + el.pos[0] * 15) / Math.pow(this.viewWidth, 2);
+      let yMult = Math.max(0, 0.5 * (this.viewHeight - el.pos[1])/norm);
+      return acc + yMult * Math.sin(this.scroll + xMult * x);
+    },
+    this.viewHeight/2
+  );
+}
+```
+
+Note: there are some extra multipliers in the composite sine function.
+They are largely to make it look better, though the overall frequencies
+and amplitudes still closely model the tone played.
+
+The result is simple and beautiful:
+
+![waveform]
+
+#### Interfacing with the App
+
+The basic control mechanism builds a `Control` object on the canvas.
+Each `Control` object provides an `isClicked` function to support click
+and touch detection, a `draw(ctx)` to render it visually, and a `move`
+method to change its position. Each `Control` also contains a `Note`
+object encapsulating an AudioContext oscillator whose pitch and volume
+`shift` whenever the containing `Control` moves, i.e in response to
+`TouchMove` and `MouseMove` events.
+
+
+#### Touch Support
+
+I built this specific project because I had a touchscreen laptop I was
+dying to learn to use, so the screen will detect multiple touches, map a
+tone to each, and render a matching composite wave.
+
+![multi]
+
+I had a solid understanding of implementing drag and drop with MouseUp,
+-Down, and -Move listeners. Touch events, containing a list of touches
+instead of one click position, proved a little trickier. I had to make
+a best guess as to which touch corresponded to which element, and
+made efforts to reconcile positioning whenever an element or toch became orphaned:
+
+```js
+handleTouchMove(e) {
+  ...
+  let posArray = this.touchMap(e);
+  let unmatchedPos = [];
+  let matchedEls = [];
+  let el;
+  for (var i = 0; i < posArray.length; i++) {
+    if ((el = this.getClicked(posArray[i], false))) {
+      // We're still touching the control. Center it on our current pos.
+      matchedEls.push(el);
+      el.move(posArray[i]);
+    } else {
+      // Add unmatched touch position to list of orphans.
+      unmatchedPos.push(posArray[i]);
+    }
+  }
+  // create list of orphaned, active controls.
+  let unmatchedEls = this.allControls().filter((u) => u.dragged && matchedEls.indexOf(u) < 0);
+  // Stop moving orphaned controls and deactivate the ephemeral ones.
+  while (unmatchedEls.length > unmatchedPos.length) {
+    el = unmatchedEls.shift();
+    el.dragged = false;
+    (this.controls.indexOf(el) < 0) && el.stop();
+  }
+  // create new ephemeral touch conctrols for orphaned touch positions.
+  while (unmatchedPos.length > unmatchedEls.length) {
+    this.touches.push(new Ephemeral({dragged: true, grid: this, pos: unmatchedPos.shift()}));
+
+  }
+  // match any remaining orphans with each other.
+  for (i = 0; i < unmatchedEls.length; i++) {
+    unmatchedEls[i].move(unmatchedPos[i]);
+  }
+}
+```
+
+#### Mouse-Only Support
+
+While the touch support was pretty nifty, not everyone has a touch
+screen to muck around with. To address this, I divide `Control`s into
+`Ephemeral` touch controls, which only live for as long as they're
+matched to continuing `TouchEvent`s, and `Knob`s, permanent
+`Control` objects rendered as control knobs on the bottom panel. These
+control knobs can be dragged onto the screen, where they will play a
+`Note` as usual and contribute to the `drawWave` method.
+
+![drag]
+
+[landing]: ./docs/screens/landing.png
+[waveform]: ./docs/screens/waveform.png
+[multi]: ./docs/screens/multi.png
+[drag]: ./docs/screens/drag.png
+
+## Future Improvements:
+
+The first improvement I will try to implement will be an option for
+different sound (and thus waveform) shapes. The options supported by
+`AudioContext`, i.e. triangle and square waves, will be easy to do in
+terms of the `Note` and harder to work into the rendering scheme.
+
+Later, I may move beyond `AudioContext` to allow pitch and volume control
+of arbitrary base tones. I do not believe the current rendering framework will work for such, and I will need to move from rendering based on a
+similar function to rendering based directly on the generated audio, and
+I will likely need to employ an external library.
