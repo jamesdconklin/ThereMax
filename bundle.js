@@ -109,11 +109,6 @@
 	      this.el.addEventListener("mouseup", function (e) {
 	        _this3.grid.handleMouseUp(e);
 	      });
-	      // this.el.addEventListener("mouseout",
-	      //   (e) => {
-	      //     this.grid.handleMouseUp(e);
-	      //   }
-	      // );
 	    }
 	  }, {
 	    key: "bindTouchDownHandler",
@@ -135,6 +130,23 @@
 	        }
 	        e.preventDefault();
 	        $(".menu-overlay").toggleClass("hidden");
+	        $(power).toggleClass("on");
+	        _this5.grid.togglePlay.bind(_this5.grid)();
+	      });
+	
+	      var power = document.getElementById("power-switch");
+	
+	      power.addEventListener("mousedown", function (e) {
+	        e.preventDefault();
+	        $(".menu-overlay").toggleClass("hidden");
+	        $(power).toggleClass("on");
+	        _this5.grid.togglePlay.bind(_this5.grid)();
+	      });
+	
+	      power.addEventListener("touchdown", function (e) {
+	        e.preventDefault();
+	        $(".menu-overlay").toggleClass("hidden");
+	        $(power).toggleClass("on");
 	        _this5.grid.togglePlay.bind(_this5.grid)();
 	      });
 	    }
@@ -197,9 +209,9 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _control = __webpack_require__(2);
+	var _knob = __webpack_require__(5);
 	
-	var _control2 = _interopRequireDefault(_control);
+	var _knob2 = _interopRequireDefault(_knob);
 	
 	var _ephemeral = __webpack_require__(4);
 	
@@ -303,17 +315,8 @@
 	      for (var j = 0; j < e.targetTouches.length; j++) {
 	        var et = e.targetTouches[j];
 	        posArray.push(this.getCursorPosition(e.target, et));
-	        // posArray.push([et.clientX, et.clientY]);
 	      }
 	      return posArray;
-	    }
-	  }, {
-	    key: 'sendSpace',
-	    value: function sendSpace() {
-	      console.log("SENDSPACE");
-	      var event = new Event("keyup");
-	      event.code = "Space";
-	      window.dispatchEvent(event);
 	    }
 	  }, {
 	    key: 'checkBounds',
@@ -327,13 +330,8 @@
 	  }, {
 	    key: 'handleTouchDown',
 	    value: function handleTouchDown(e) {
-	      e.preventDefault();
-	      e.stopPropagation();
 	      var posArray = this.touchMap(e);
 	      if (this.paused) {
-	        if (posArray.length === 1 && posArray[0][1] > this.viewHeight) {
-	          this.sendSpace();
-	        }
 	        return;
 	      }
 	
@@ -353,8 +351,9 @@
 	          this.touches.push(new _ephemeral2.default(opts));
 	        }
 	      }
-	      if (!selected) {
-	        this.sendSpace();
+	      if (selected) {
+	        e.preventDefault();
+	        e.stopPropagation();
 	      }
 	    }
 	  }, {
@@ -503,11 +502,11 @@
 	    value: function addControls() {
 	      for (var i = 1; i < NUM_CONTROLS + 1; i++) {
 	        var opts = {
-	          pos: [i * (1 / (NUM_CONTROLS + 1)) * (this.viewWidth - 30) + 15, this.viewHeight + 75],
+	          pos: [i * (1 / (NUM_CONTROLS + 1)) * (this.viewWidth * (NUM_CONTROLS / (NUM_CONTROLS + 1))) + 15, this.viewHeight + 75],
 	          grid: this,
 	          control: true
 	        };
-	        this.controls.push(new _control2.default(opts));
+	        this.controls.push(new _knob2.default(opts));
 	      }
 	    }
 	  }, {
@@ -517,9 +516,6 @@
 	
 	      var norm = this.allControls().length;
 	      return this.allControls().reduce(function (acc, el) {
-	        // if (this.paused) {
-	        //   return acc;
-	        // }
 	        var xMult = 4 * Math.PI * (1 + el.pos[0] * 15) / Math.pow(_this2.viewWidth, 2);
 	        var yMult = Math.max(0, 0.5 * (_this2.viewHeight - el.pos[1]) / norm);
 	        return acc + yMult * Math.sin(_this2.scroll + xMult * x);
@@ -544,7 +540,7 @@
 	      ctx.lineWidth = 12;
 	      ctx.stroke();
 	      ctx.lineWidth = 3;
-	      ctx.strokeStyle = "#CCFFDD"; //#33FF33";
+	      ctx.strokeStyle = "#CCFFDD";
 	      ctx.globalAlpha = 1;
 	      ctx.stroke();
 	    }
@@ -558,7 +554,6 @@
 	  }, {
 	    key: 'draw',
 	    value: function draw(ctx) {
-	      // TODO: THIS MUST BE BROKEN UP.
 	      var saveStyle = ctx.strokeStyle;
 	      var saveWidth = ctx.lineWidth;
 	      var saveAlpha = ctx.globalAlpha;
@@ -580,13 +575,18 @@
 	      var fillStyle = ctx.fillStyle,
 	          globalAlpha = ctx.globalAlpha;
 	
-	      ctx.fillStyle = "#986445";
+	      var panel = document.getElementById("wood-panel");
+	      if (panel.complete) {
+	        ctx.drawImage(panel, 0, 0, this.viewWidth, 150, 0, this.viewHeight, this.viewWidth, 150);
+	      } else {
+	        ctx.fillStyle = "#986445";
+	        ctx.beginPath();
+	        ctx.rect(0, this.viewHeight, this.viewWidth, this.trayHeight);
+	        ctx.fill();
+	      }
 	      ctx.beginPath();
-	      ctx.rect(0, this.viewHeight, this.viewWidth, this.trayHeight);
-	      ctx.fill();
-	      ctx.beginPath();
-	      ctx.fillStyle = "#333";
-	      ctx.globalAlpha = 0.35;
+	      ctx.fillStyle = "#420";
+	      ctx.globalAlpha = 0.4;
 	      ctx.rect(0, this.viewHeight, this.viewWidth, 5);
 	      ctx.fill();
 	      ctx.fillStyle = fillStyle;
@@ -670,7 +670,6 @@
 	    this.grid = options.grid;
 	    this.dragged = Boolean(options.dragged);
 	
-	    // debugger;
 	    this.note = new _note2.default(this.pos[0] / this.grid.viewWidth, Math.max(0, 1 - this.pos[1] / this.grid.viewHeight));
 	  }
 	
@@ -929,6 +928,60 @@
 	}(_control2.default);
 	
 	exports.default = Ephemeral;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	
+	var _control = __webpack_require__(2);
+	
+	var _control2 = _interopRequireDefault(_control);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Knob = function (_Control) {
+	  _inherits(Knob, _Control);
+	
+	  function Knob(options) {
+	    _classCallCheck(this, Knob);
+	
+	    var _this = _possibleConstructorReturn(this, (Knob.__proto__ || Object.getPrototypeOf(Knob)).call(this, options));
+	
+	    _this.img = document.getElementById("control-knob");
+	    return _this;
+	  }
+	
+	  _createClass(Knob, [{
+	    key: "draw",
+	    value: function draw(ctx) {
+	      if (this.img.complete) {
+	        ctx.drawImage(this.img, this.pos[0] - 40, this.pos[1] - 40);
+	      } else {
+	        _get(Knob.prototype.__proto__ || Object.getPrototypeOf(Knob.prototype), "draw", this).call(this, ctx);
+	      }
+	    }
+	  }]);
+	
+	  return Knob;
+	}(_control2.default);
+	
+	exports.default = Knob;
 
 /***/ }
 /******/ ]);

@@ -16,13 +16,14 @@
 
   &.hidden {
     visibility: hidden;
-
-    * {
-      visibility: hidden;
-    }
+    //
+    // {
+    //   visibility: hidden;
+    // }
   }
 
   .menu {
+    user-select: none;
     font-family: 'Share Tech Mono', monospace;
     font-size: 18px;
     text-shadow: 0 0 5px green;
@@ -36,6 +37,7 @@
       margin-top: 15px;
       margin-bottom: 15px;
       line-height: 1.5;
+
     }
 
 
@@ -43,8 +45,34 @@
     .menu-links {
       display: flex;
       justify-content: space-around;
+
+      a {
+        font-size: 20px;
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
-
-
   }
+}
+
+.power-switch {
+  position: absolute;
+  bottom: 42px;
+  right: 10%;
+  width: 68px;
+  height: 68px;
+  overflow: hidden;
+  background-image: url(../img/onoffswitch.png);
+
+  &.on {
+    background-position: right;
+  }
+
+}
+
+.img-store {
+  display: none;
 }

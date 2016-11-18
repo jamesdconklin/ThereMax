@@ -14,9 +14,8 @@
   background-color: black; }
   .menu-overlay.hidden {
     visibility: hidden; }
-    .menu-overlay.hidden * {
-      visibility: hidden; }
   .menu-overlay .menu {
+    user-select: none;
     font-family: 'Share Tech Mono', monospace;
     font-size: 18px;
     text-shadow: 0 0 5px green;
@@ -31,3 +30,22 @@
     .menu-overlay .menu .menu-links {
       display: flex;
       justify-content: space-around; }
+      .menu-overlay .menu .menu-links a {
+        font-size: 20px;
+        cursor: pointer; }
+        .menu-overlay .menu .menu-links a:hover {
+          text-decoration: underline; }
+
+.power-switch {
+  position: absolute;
+  bottom: 42px;
+  right: 10%;
+  width: 68px;
+  height: 68px;
+  overflow: hidden;
+  background-image: url(../img/onoffswitch.png); }
+  .power-switch.on {
+    background-position: right; }
+
+.img-store {
+  display: none; }

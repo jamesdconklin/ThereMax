@@ -8,4 +8,5 @@ body, div, p, a {
   font-size: inherit;
   text-decoration: none;
   text-shadow: inherit;
+  user-select: inherit;
 }
