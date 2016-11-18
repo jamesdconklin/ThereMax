@@ -24,7 +24,7 @@ To epxplain functionality, the project will include at a minimum:
 The instrument will consist of a single screen with the waveform view and links to the help modal and the project github.
 Game controls will be simple - click and hold to play a note or click and release to place a draggable control node. 
 
-![waveform](./docs/waveform.png)
+![waveform](./waveform.png)
 
 ### Architecture & Technologies
 
