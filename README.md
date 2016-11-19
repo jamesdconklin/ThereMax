@@ -1,7 +1,8 @@
 # ThereMax
 
 [Live Site @ GitHub Pages](https://jamesdconklin.github.io/ThereMax)
-[Project Site @ GiutHub](https://github.com/jamesdconklin/ThereMax)
+
+[Project Site @ GitHub](https://github.com/jamesdconklin/ThereMax)
 
 ThereMax is an engaging in-browser synthesizer inspired by the theremin
 and by oscilloscopes. It translates touches or clicks upon a grid to a
@@ -150,10 +151,19 @@ control knobs can be dragged onto the screen, where they will play a
 
 ## Future Improvements:
 
-The first improvement I will try to implement will be an option for
-different sound (and thus waveform) shapes. The options supported by
-`AudioContext`, i.e. triangle and square waves, will be easy to do in
-terms of the `Note` and harder to work into the rendering scheme.
+First on the table is allowing resizing the window without a reload. 
+As it is right now, the layout works for a bevy of window sizes, 
+but the canvas size does not readjust on rotate or resize. 
+
+I'd like to figure out how to guarantee proper display on mobile
+devices, including smooth handlers for autorotations. As it is,
+it displays okay in portrait mode on the phones I've tried, though
+those phones' speakers could not play the lower notes on the range. 
+
+I'd like to implement an option for for different sound (and thus 
+waveform) shapes. The options supported by `AudioContext`, i.e. 
+triangle and square waves, will be easy to do in terms of the 
+`Note` and harder to work into the rendering scheme.
 
 Later, I may move beyond `AudioContext` to allow pitch and volume control
 of arbitrary base tones. I do not believe the current rendering framework will work for such, and I will need to move from rendering based on a
