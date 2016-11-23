@@ -135,9 +135,9 @@ handleTouchMove(e) {
 #### Mouse-Only Support
 
 While the touch support was pretty nifty, not everyone has a touch
-screen to muck around with. To address this, I divide `Control`s into
+screen to muck around with. To address this, I divide `Controls` into
 `Ephemeral` touch controls, which only live for as long as they're
-matched to continuing `TouchEvent`s, and `Knob`s, permanent
+matched to continuing `TouchEvents`, and `Knobs`, permanent
 `Control` objects rendered as control knobs on the bottom panel. These
 control knobs can be dragged onto the screen, where they will play a
 `Note` as usual and contribute to the `drawWave` method.
