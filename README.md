@@ -93,7 +93,7 @@ I had a solid understanding of implementing drag and drop with MouseUp,
 -Down, and -Move listeners. Touch events, containing a list of touches
 instead of one click position, proved a little trickier. I had to make
 a best guess as to which touch corresponded to which element, and
-made efforts to reconcile positioning whenever an element or toch became orphaned:
+made efforts to reconcile positioning whenever an element or touch became orphaned:
 
 ```js
 handleTouchMove(e) {
